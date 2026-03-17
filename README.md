@@ -15,7 +15,18 @@ This project is a documented simulation and design of DC Motor Driver
 
 ## How to run
 
-Motor simulation
+### Python simulation
+
+Before you run the simulation, you need to setup a virtual envirement with all the needed libraries.
+You only need to do this once.
+
+```bash
+python -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+```
+
+Then cou can run the simulation.
 
 ```bash
 python simulation.py
