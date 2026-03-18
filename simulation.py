@@ -65,11 +65,6 @@ sols = [
     {"name": "Power", "unit": "W", "title": "Mechanical Power", "data": Pm},
 ]
 
-print("Specs:")
-for sol in sols:
-    print(
-        f"\t{sol['title']}: {sol['data'][-1]} {sol['unit']}, max: {max(sol['data'])} {sol['unit']}"
-    )
 
 fig, axes = plt.subplots(2, 3, sharex=True)
 axes = axes.flatten()
@@ -77,6 +72,11 @@ axes = axes.flatten()
 for i in range(len(sols)):
     plot = sols[i]
     ax = axes[i]
+
+    print(
+        f"{plot['title']}:\n\tmoy: {plot['data'][-1]} {plot['unit']}\n\tmax: {max(plot['data'])} {plot['unit']}"
+    )
+
     ax.plot(t, plot["data"])
     ax.set_ylabel(f"{plot["name"]}({plot["unit"]})")
     ax.set_xlabel("Time(s)")
