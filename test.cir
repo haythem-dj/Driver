@@ -1,23 +1,42 @@
 H-Bridge Driver
 .tran 1u 0.02
 
-V1 in gnd PULSE(0 24 0 1u 1u 1 1)
-Vg l gnd PULSE(0 5 0 1u 1u 0.005 0.01)
+V1 vcc gnd PULSE(0 24 0 1u 1u 1 1)
+Vctrl1 ctrl1 gnd PULSE(0 5 0 1u 1u 0.005 0.01)
+Vctrl2 ctrl2 gnd PULSE(0 5 0.005 1u 1u 0.005 0.01)
 
-Xpmos1 in g load irf9z34n_IR
-Rg in g 10k
-Rd g drive 10k
-Xnmos1 drive c gnd irfz24n_IR
-Rc c gnd 100k
-Rload load gnd 1k
-R0 l c 100
+Rload o1 o2 1k
+
+XS1 vcc gnd ctrl1 o1 HS
+XS2 gnd ctrl2 o1 LS
+XS3 vcc gnd ctrl2 o2 HS
+xS4 gnd ctrl1 o2 LS
 
 .control
 run
 set filetype=ascii
-write driver.data in c g load
+write test.data vcc ctrl1 ctrl2 v(o1,o2)
 .endc
 
+
+**************************************
+.SUBCKT HS vcc gnd ctrl load
+Xpmos load gate vcc irf9z34n_IR
+Rp1 vcc gate 10k
+Rs1 d gate 100
+Xnmos d g gnd irfz24n_IR
+Rp2 g gnd 10k
+Rs2 ctrl g 100
+.ENDS
+**************************************
+
+**************************************
+.SUBCKT LS gnd load ctrl
+Xnmos load 2 gnd irfz24n_IR
+Rp 2 gnd 10k
+Rs ctrl 2 100
+.ENDS
+**************************************
 
 **************************************
 .SUBCKT irfz24n_IR 1 2 3

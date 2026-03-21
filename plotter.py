@@ -56,7 +56,7 @@ def read_file(file):
     return variables
 
 
-data_file = "driver.data"
+data_file = "test.data"
 variables = read_file(data_file)
 keys = list(variables.keys())
 rows, cols = subplot_shape(len(keys) - 1)
