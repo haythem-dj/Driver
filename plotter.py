@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 import math
+import json
+import sys
+import os
 
 
 def subplot_shape(l):
@@ -12,70 +16,72 @@ def subplot_shape(l):
 
     return rows, cols
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="Read ngspice data as JSON and plot them as a png."
+    )
 
-def read_file(file):
-    with open(file) as f:
-        variables = {}
-        num_points = 0
+    parser.add_argument(
+        "-i", "--input", required=True,
+        help="ngspice data JSON file."
+    )
 
-        for line in f:
-            if "No. Points" in line:
-                num_points = int(line.split()[-1])
-            elif line.startswith("Variables"):
-                break
+    parser.add_argument(
+        "-o", "--output", required=True,
+        help="PNG file name."
+    )
 
-        for line in f:
-            if "Values" in line:
-                break
+    parser.add_argument(
+        "-t", "--title",
+        help="A title for the plot.",
+        default="Data Visualising"
+    )
 
-            vs = line.strip().split()
-            variables[vs[1]] = {"description": vs[2], "data": np.zeros(num_points)}
+    parser.add_argument(
+        "-inc", "--include",
+        nargs="+",
+        help="The names of the variables to export."
+    )
 
-        keys = list(variables.keys())
+    args = parser.parse_args()
 
-        col = 0
-        row = -1
-        for line in f:
-            line = line.strip()
-            if line == "":
-                continue
+    with open(args.input, "r") as f:
+        variables = json.load(f)
 
-            v = line.split()
+    if "time" not in variables:
+        raise ValueError("no 'time' variable found in data file")
+    time = variables["time"]["data"]
 
-            if len(v) == 2:
-                row += 1
-                col = 0
+    if args.include:
+        keys_to_plot = [k for k in args.include if k in variables and k != "time"]
+        if not keys_to_plot:
+            print(f"Error: None of the requested variables '{args.include}' found in data.")
+            sys.exit(1)
 
-            try:
-                key = keys[col]
-                variables[key]["data"][row] = float(v[-1])
-            except ValueError:
-                break
-            col += 1
-
-    return variables
+    else:
+        keys_to_plot = [k for k in variables if k != "time"]
 
 
-data_file = "test.data"
-variables = read_file(data_file)
-keys = list(variables.keys())
-rows, cols = subplot_shape(len(keys) - 1)
-fig, axes = plt.subplots(rows, cols, figsize=(4 * cols, 3 * rows))
-axes = np.array(axes).flatten()
+    rows, cols = subplot_shape(len(keys_to_plot))
+    _, axes = plt.subplots(rows, cols, figsize=(4 * cols, 3 * rows))
+    axes = np.array(axes).flatten()
 
-if "time" not in variables:
-    raise ValueError("no 'time' variable found in data file")
+    for i, key in enumerate(keys_to_plot):
+        ax = axes[i]
+        ax.plot(time, variables[key]["data"])
+        ax.set_xlabel("time")
+        ax.set_ylabel(key)
+        ax.grid(True)
 
-time = variables["time"]["data"]
+    plt.suptitle(args.title)
+    plt.tight_layout()
 
-for i in range(1, len(keys)):
-    ax = axes[i - 1]
-    key = keys[i]
-    ax.plot(time, variables[key]["data"])
-    ax.grid()
-    ax.set_xlabel("time")
-    ax.set_ylabel(key)
+    root, ext = os.path.splitext(args.output)
+    output = f"{root}.png"
 
-plt.tight_layout()
+    plt.savefig(output, bbox_inches="tight")
 
-plt.show()
+    print(f"Plot save as {output}")
+
+if __name__ == "__main__":
+    main()

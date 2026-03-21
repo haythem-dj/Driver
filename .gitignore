@@ -1,4 +1,7 @@
 *.pdf
 *.data
 
+*.json
+*.png
+
 env/

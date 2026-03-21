@@ -1,0 +1,17 @@
+.include IRFZ24N.cir
+.include IRF9Z34N.cir
+
+.SUBCKT HS vcc gnd ctrl load
+Xpmos load gate vcc IRF9Z34N
+Rp1 vcc gate 10k
+Rs1 d gate 100
+Xnmos d g gnd IRFZ24N
+Rp2 g gnd 10k
+Rs2 ctrl g 100
+.ENDS
+
+.SUBCKT LS gnd ctrl load
+Xnmos load gate gnd IRFZ24N
+Rp gate gnd 10k
+Rs ctrl gate 100
+.ENDS
