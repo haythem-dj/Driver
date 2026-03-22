@@ -4,9 +4,10 @@ import sys
 import os
 import json
 
+
 def load_data(file_name):
     if not os.path.exists(file_name):
-        f("Error: File '{file}' was not found.")
+        print(f"Error: File '{file_name}' was not found.")
         sys.exit(1)
 
     with open(file_name) as f:
@@ -50,40 +51,38 @@ def load_data(file_name):
 
     return variables
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Parse ngspice data (ascii) and export it as JSON."
     )
 
     parser.add_argument(
-        "-i", "--input", required=True,
-        help="The input ngspice data file."
+        "-i", "--input", required=True, help="The input ngspice data file."
     )
 
-    parser.add_argument(
-        "-o", "--output", required=True,
-        help="The output JSON file."
-    )
-
+    parser.add_argument("-o", "--output", help="The output JSON file.")
 
     args = parser.parse_args()
+    output_file = (
+        args.output if args.output else f"{os.path.splitext(args.input)[0]}.json"
+    )
 
     variables = load_data(args.input)
 
     if "time" not in variables:
         raise ValueError("no 'time' variable found in data file")
-    
+
     output = {
-        key: {
-            "description": val["description"],
-            "data": val["data"].tolist()
-        } for key, val in variables.items()
+        key: {"description": val["description"], "data": val["data"].tolist()}
+        for key, val in variables.items()
     }
 
-    with open(args.output, "w") as file:
+    with open(output_file, "w") as file:
         json.dump(output, file, indent=4)
 
-    print(f"{args.output} is generated.")
+    print(f"{output_file} is generated.")
+
 
 if __name__ == "__main__":
     main()
